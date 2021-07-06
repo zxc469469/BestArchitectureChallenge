@@ -4,13 +4,17 @@
 
 ## 目標
 
-- 利用 `flutter_hooks` 建立類似於 react 的開發體驗
+- 使用 `flutter_hooks` 建立類似於 react 的開發體驗
+- 盡量使用 `Functional programing` 的概念實作
+- 使用 `redux` 建立跨組件狀態管理的架構
+
 
 ## 套件
-1. flutter_hooks
-1. mockito
-1. build_runner
-1. http
+1. flutter_hooks - flutter版的hook
+1. mockito - 測試時mock用
+1. http - http request用
+1. fpdart - 提供一些FP的utils
+1. build_runner - 
 
 ___
 
