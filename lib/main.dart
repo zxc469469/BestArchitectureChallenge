@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:http/http.dart' as http;
 
+import 'hooks/useFetch.dart';
+
 enum SortConditionEnum {
   sortWithId,
   sortWithTitle,
@@ -38,20 +40,6 @@ List sortPostsData(SortConditionEnum sortConditionEnum, data) {
   return _data;
 }
 
-Future<List<dynamic>> fetchData(
-  http.Client client,
-  Uri postsUri,
-) async {
-  final response = await client.get(postsUri);
-  if (response.statusCode == 200) {
-    var result = jsonDecode(response.body);
-
-    return result;
-  } else {
-    throw Exception('Failed to load posts');
-  }
-}
-
 class Posts {
   final int userId;
   final int id;
@@ -72,19 +60,6 @@ class Posts {
       body: json['body'],
     );
   }
-}
-
-ValueNotifier<List> useFetchPostData() {
-  final _data = useState([]);
-  final postsUri = Uri.https('jsonplaceholder.typicode.com', '/posts');
-  final _client = http.Client();
-  useEffect(() {
-    fetchData(_client, postsUri).then((value) {
-      _data.value = value;
-    });
-  }, []);
-
-  return _data;
 }
 
 void main() {
@@ -113,7 +88,8 @@ class PostPage extends HookWidget {
   Widget build(BuildContext context) {
     final sortCondition =
         useState<SortConditionEnum>(SortConditionEnum.sortWithId);
-    final fetchPosts = useFetchPostData();
+    final fetchPosts =
+        useFetchPostData(Uri.https('jsonplaceholder.typicode.com', '/posts'));
     final _posts = sortPostsData(sortCondition.value, fetchPosts.value);
 
     return Scaffold(
