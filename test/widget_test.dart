@@ -1,8 +1,7 @@
+import 'package:best_architecture_challenge/components/SortMenuButton.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:http/http.dart' as http;
-
-import 'package:best_architecture_challenge/main.dart';
 
 @GenerateMocks([http.Client, http.Request, http.Response])
 void main() {

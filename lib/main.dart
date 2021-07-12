@@ -1,66 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:http/http.dart' as http;
 
+import 'components/PostListView.dart';
+import 'components/SortMenuButton.dart';
 import 'hooks/useFetch.dart';
-
-enum SortConditionEnum {
-  sortWithId,
-  sortWithTitle,
-  sortWithTitleLength,
-  sortWithBodyLength
-}
-
-List sortPostsData(SortConditionEnum sortConditionEnum, data) {
-  final _data = []..addAll(data);
-  if (sortConditionEnum == SortConditionEnum.sortWithId) {
-    _data.sort((a, b) {
-      return int.parse(a['id'].toString())
-          .compareTo(int.parse(b['id'].toString()));
-    });
-  } else if (sortConditionEnum == SortConditionEnum.sortWithTitle) {
-    _data.sort((a, b) {
-      return a['title'].toString().compareTo(b['title'].toString());
-    });
-  } else if (sortConditionEnum == SortConditionEnum.sortWithTitleLength) {
-    _data.sort((a, b) {
-      return a['title']
-          .toString()
-          .length
-          .compareTo(b['title'].toString().length);
-    });
-  } else if (sortConditionEnum == SortConditionEnum.sortWithBodyLength) {
-    _data.sort((a, b) {
-      return a['body'].toString().length.compareTo(b['body'].toString().length);
-    });
-  }
-  return _data;
-}
-
-class Posts {
-  final int userId;
-  final int id;
-  final String title;
-  final String body;
-
-  Posts(
-      {required this.id,
-      required this.userId,
-      required this.title,
-      required this.body});
-
-  factory Posts.fromJson(Map<String, dynamic> json) {
-    return Posts(
-      userId: json['userId'],
-      id: json['id'],
-      title: json['title'],
-      body: json['body'],
-    );
-  }
-}
 
 void main() {
   runApp(MyApp());
@@ -89,65 +33,16 @@ class PostPage extends HookWidget {
     final sortCondition =
         useState<SortConditionEnum>(SortConditionEnum.sortWithId);
     final fetchPosts =
-        useFetchPostData(Uri.https('jsonplaceholder.typicode.com', '/posts'));
+        useFetch(Uri.https('jsonplaceholder.typicode.com', '/posts'));
     final _posts = sortPostsData(sortCondition.value, fetchPosts.value);
 
     return Scaffold(
         appBar: AppBar(
           title: Text(title),
-          actions: <Widget>[
-            PopupMenuButton(
-                icon: Icon(Icons.more_vert),
-                itemBuilder: (context) => [
-                      PopupMenuItem(
-                        child: Text('使用id排序'),
-                        value: SortConditionEnum.sortWithId,
-                      ),
-                      PopupMenuItem(
-                        child: Text('使用title排序'),
-                        value: SortConditionEnum.sortWithTitle,
-                      ),
-                      PopupMenuItem(
-                        child: Text('使用title長度排序'),
-                        value: SortConditionEnum.sortWithTitleLength,
-                      ),
-                      PopupMenuItem(
-                        child: Text('使用body長度排序'),
-                        value: SortConditionEnum.sortWithBodyLength,
-                      )
-                    ],
-                onSelected: (SortConditionEnum value) {
-                  sortCondition.value = value;
-                })
-          ],
+          actions: <Widget>[SortMenuButton(sortCondition: sortCondition)],
         ),
-        body: ListView.separated(
-          itemCount: _posts.length,
-          itemBuilder: (context, index) {
-            String id = _posts[index]['id'].toString();
-            String title = _posts[index]['title'].toString();
-            String body = _posts[index]['body'].toString();
-            return Container(
-                padding: EdgeInsets.all(8),
-                child: RichText(
-                  text: TextSpan(
-                    style: DefaultTextStyle.of(context).style,
-                    children: <TextSpan>[
-                      TextSpan(
-                        text: "$id. $title",
-                        style: TextStyle(fontSize: 18, color: Colors.red),
-                      ),
-                      TextSpan(
-                        text: '\n' + body,
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ));
-          },
-          separatorBuilder: (context, index) {
-            return Divider();
-          },
+        body: PostListView(
+          postData: _posts,
         ));
   }
 }
