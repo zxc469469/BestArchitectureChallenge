@@ -10,6 +10,23 @@ void main() {
   runApp(MyApp());
 }
 
+class AppState {
+  final List<dynamic> post;
+  AppState({this.post = const []});
+}
+
+class IncrementAction {
+  final List<dynamic> payload;
+  IncrementAction({this.payload = const []});
+}
+
+AppState reducer(AppState state, action) {
+  if (action is IncrementAction) {
+    return AppState(post: action.payload);
+  }
+  return state;
+}
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -35,6 +52,12 @@ class PostPage extends HookWidget {
     final fetchPosts =
         useFetch(Uri.https('jsonplaceholder.typicode.com', '/posts'));
     final _posts = sortPostsData(sortCondition.value, fetchPosts.value);
+    final _store = useReducer<AppState, dynamic>(reducer,
+        initialState: AppState(post: []), initialAction: null);
+    useEffect(() {
+      _store.dispatch(IncrementAction(payload: _posts));
+    }, [_posts]);
+    print(_store.state.post);
 
     return Scaffold(
         appBar: AppBar(
