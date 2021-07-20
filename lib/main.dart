@@ -1,30 +1,33 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'components/PostListView.dart';
 import 'components/SortMenuButton.dart';
 import 'hooks/useFetch.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(ProviderScope(child: MyApp()));
 }
 
-class AppState {
-  final List<dynamic> post;
-  AppState({this.post = const []});
-}
+final StateNotifierProvider<PostState, List<dynamic>> postNotifierProvider =
+    StateNotifierProvider<PostState, List<dynamic>>((ref) => PostState());
 
-class IncrementAction {
-  final List<dynamic> payload;
-  IncrementAction({this.payload = const []});
-}
+class PostState extends StateNotifier<List<dynamic>> {
+  PostState() : super([]);
 
-AppState reducer(AppState state, action) {
-  if (action is IncrementAction) {
-    return AppState(post: action.payload);
+  void load(post) => state = post;
+  void changeSort(SortConditionEnum sortConditionEnum) {
+    // print(state);
+    state = sortPostsData(sortConditionEnum, state);
+    // print(state);
   }
-  return state;
+
+  @override
+  String toString() {
+    return 'state：$state';
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -52,20 +55,24 @@ class PostPage extends HookWidget {
     final fetchPosts =
         useFetch(Uri.https('jsonplaceholder.typicode.com', '/posts'));
     final _posts = sortPostsData(sortCondition.value, fetchPosts.value);
-    final _store = useReducer<AppState, dynamic>(reducer,
-        initialState: AppState(post: []), initialAction: null);
-    useEffect(() {
-      _store.dispatch(IncrementAction(payload: _posts));
-    }, [_posts]);
-    print(_store.state.post);
 
+    useProvider(postNotifierProvider.notifier).load(fetchPosts.value);
     return Scaffold(
         appBar: AppBar(
           title: Text(title),
           actions: <Widget>[SortMenuButton(sortCondition: sortCondition)],
         ),
-        body: PostListView(
-          postData: _posts,
-        ));
+        body: Consumer(
+          builder: (context, watch, child) {
+            final number = watch(postNotifierProvider.notifier);
+            final sort = watch(sortConditProvider);
+            print(sort.state);
+            return Text(number.toString());
+          },
+        )
+        //  PostListView(
+        //   postData: _posts,
+        // ),
+        );
   }
 }

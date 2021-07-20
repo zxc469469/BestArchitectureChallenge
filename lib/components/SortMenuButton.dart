@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 enum SortConditionEnum {
   sortWithId,
@@ -7,7 +9,24 @@ enum SortConditionEnum {
   sortWithBodyLength
 }
 
-class SortMenuButton extends StatelessWidget {
+final sortConditProvider = StateProvider((ref) => SortConditionEnum.sortWithId);
+// final sortedPostListProvider = Provider<List<dynamic>>((ref) {
+//   final sorter = ref.watch(sortConditProvider);
+//   final posts = ref.watch(postNotifierProvider.notifier).state;
+
+//   switch (sorter.state) {
+//     case SortConditionEnum.sortWithId:
+//       return sortPostsData(sorter.state,posts.state);
+//     case SortConditionEnum.sortWithBodyLength:
+//       return posts;
+//     case SortConditionEnum.sortWithTitle:
+//       return posts;
+//     case SortConditionEnum.sortWithTitleLength:
+//       return posts;
+//   }
+// });
+
+class SortMenuButton extends HookWidget {
   const SortMenuButton({
     Key? key,
     required this.sortCondition,
@@ -39,6 +58,7 @@ class SortMenuButton extends StatelessWidget {
             ],
         onSelected: (SortConditionEnum value) {
           sortCondition.value = value;
+          context.read(sortConditProvider).state = value;
         });
   }
 }
